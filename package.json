@@ -1,0 +1,16 @@
+{
+  "name": "history-time-lab", "version": "0.1.0", "private": true, "type": "module",
+  "workspaces": ["apps/explorer", "packages/*"],
+  "scripts": {
+    "dev": "vite --config apps/explorer/vite.config.ts --host 127.0.0.1 --port 4173 --strictPort",
+    "build": "vue-tsc --noEmit && vite build --config apps/explorer/vite.config.ts && vite build --config packages/history-ui/vite.config.ts",
+    "preview": "vite preview --config apps/explorer/vite.config.ts --host 127.0.0.1 --port 4173 --strictPort",
+    "typecheck": "vue-tsc --noEmit",
+    "test": "vitest run",
+    "data:build": "python tools/build_dataset.py",
+    "test:e2e": "node tests/e2e/acceptance.cjs && node tests/e2e/guanlan-router.cjs",
+    "build:lib-preview": "node -e \"process.env.HISTORY_LIB_SELF_CONTAINED='1';import('vite').then(v=>v.build({configFile:'packages/history-ui/vite.config.ts'}))\""
+  },
+  "dependencies": { "vue": "3.5.43", "vue-router": "4.6.4" },
+  "devDependencies": { "@vitejs/plugin-vue": "6.0.9", "vite": "8.3.2", "typescript": "5.9.3", "vue-tsc": "3.3.12", "vitest": "5.0.3", "fake-indexeddb": "6.2.5", "@types/node": "22.19.11", "@playwright/test": "1.58.2" }
+}

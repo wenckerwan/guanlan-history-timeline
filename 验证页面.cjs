@@ -1,0 +1,38 @@
+const {chromium}=require('C:/Users/Administrator/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const {pathToFileURL}=require('url');
+const path=require('path');
+(async()=>{
+ let browser;
+ try{browser=await chromium.launch({headless:true});}catch(e){browser=await chromium.launch({channel:'msedge',headless:true});}
+ const page=await browser.newPage({viewport:{width:1440,height:1050}});
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto(pathToFileURL('F:/2027考研资料/考研政治/近现代史时间轴/中国近现代史时间轴.html').href);
+ const assert=(condition,message)=>{if(!condition)throw new Error(message)};
+ assert(await page.locator('.entry').count()===124,'record count');
+ await page.locator('#search').fill('虎门销烟');
+ assert(await page.locator('.entry:visible').count()===1,'search');
+ await page.locator('#search').fill('');
+ await page.getByRole('button',{name:'1919—1930',exact:true}).click();
+ const years=await page.locator('.entry:visible').evaluateAll(es=>es.map(e=>Number(e.dataset.year)));
+ assert(years.length>0&&years.every(y=>y>=1919&&y<=1930),'period filter');
+ await page.getByRole('button',{name:'全部年份',exact:true}).click();
+ await page.locator('#collapse').click();assert(await page.locator('.entry details[open]').count()===0,'collapse');
+ await page.locator('#expand').click();assert(await page.locator('.entry details[open]').count()===124,'expand');
+ await page.locator('#sort').selectOption('year');
+ const sorted=await page.locator('.entry').evaluateAll(es=>es.map(e=>Number(e.dataset.year)));assert(sorted.every((y,i)=>i===0||y>=sorted[i-1]),'sort');
+ await page.locator('#sort').selectOption('original');
+ await page.screenshot({path:path.join(__dirname,'时间轴预览.png')});
+ await page.locator('[data-review="C01"]').click();assert(await page.locator('#review-view').isVisible(),'review navigation');
+ assert(await page.locator('.review-card').count()===34,'review count');
+ await page.locator('#kind').selectOption('B');assert(await page.locator('.review-card:visible').count()===14,'review filter');
+ await page.locator('#kind').selectOption('all');
+ assert(await page.locator('#reviews a').count()===68,'two date sources per item');
+ assert(await page.locator('#reviews .excerpt').count()===0,'no extended explanations');
+ await page.screenshot({path:path.join(__dirname,'审核页预览.png')});
+ await page.setViewportSize({width:390,height:844});await page.locator('[data-view="timeline"]').click();
+ assert(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),'mobile overflow');
+ await page.screenshot({path:path.join(__dirname,'手机预览.png')});
+ assert(errors.length===0,'console errors: '+errors.join(';'));
+ console.log(JSON.stringify({groups:124,date_comparisons:34,date_sources:68,search:true,period_filter:true,sort:true,expand_collapse:true,review_navigation:true,mobile_no_overflow:true,page_errors:errors}));
+ await browser.close();
+})().catch(e=>{console.error(e);process.exit(1)});

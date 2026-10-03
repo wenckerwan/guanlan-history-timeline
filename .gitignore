@@ -1,0 +1,12 @@
+node_modules/
+dist/
+artifacts/
+__pycache__/
+.env
+.env.*
+*.local
+# 本机截图与验证残留
+时间轴预览.png
+审核页预览.png
+手机预览.png
+*.tsbuildinfo
